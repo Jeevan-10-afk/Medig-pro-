@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.1",
+    "joi": "^17.9.2",
+    "node-fetch": "^3.4.1",
     "@tailwindcss/vite": "^4.2.1",
     "chart.js": "^4.5.1",
     "date-fns": "^4.4.0",
