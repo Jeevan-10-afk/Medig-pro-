@@ -8,6 +8,22 @@ export const medicalRecordSchema = Joi.object({
   created_at: Joi.date().optional(),
 });
 
+export const patientSchema = Joi.object({
+  full_name: Joi.string().required(),
+  phone: Joi.string().allow('', null),
+  email: Joi.string().email().allow('', null),
+  address: Joi.string().allow('', null),
+  date_of_birth: Joi.date().optional(),
+});
+
+export const appointmentSchema = Joi.object({
+  patient_id: Joi.string().required(),
+  doctor_id: Joi.string().required(),
+  appointment_date: Joi.date().required(),
+  status: Joi.string().valid('scheduled','cancelled','completed').optional(),
+  notes: Joi.string().allow('', null),
+});
+
 export const registerSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(8).required(),
