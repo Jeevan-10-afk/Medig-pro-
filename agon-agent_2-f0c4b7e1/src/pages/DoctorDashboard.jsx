@@ -59,11 +59,14 @@ export default function DoctorDashboard() {
 
   const fetchData = async () => {
     try {
+      const token = localStorage.getItem('token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      
       const [patientsRes, appointmentsRes, notificationsRes, analyticsRes] = await Promise.all([
-        fetch('/api/patients'),
-        fetch('/api/appointments'),
-        fetch('/api/notifications'),
-        fetch('/api/analytics')
+        fetch('/api/patients', { headers }),
+        fetch('/api/appointments', { headers }),
+        fetch('/api/notifications', { headers }),
+        fetch('/api/analytics', { headers })
       ]);
 
       const patientsData = await patientsRes.json();
@@ -85,7 +88,9 @@ export default function DoctorDashboard() {
   const handleQRScan = async (patientId) => {
     setShowQRScanner(false);
     try {
-      const res = await fetch(`/api/patients?qr_code=${patientId}`);
+      const token = localStorage.getItem('token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const res = await fetch(`/api/patients?qr_code=${patientId}`, { headers });
       const patient = await res.json();
       if (patient) {
         setSelectedPatient(patient);
