@@ -1,0 +1,10 @@
+[
+  {
+    "id": "doc-1",
+    "full_name": "Dr. Jeevan",
+    "specialty": "General Medicine",
+    "phone": "9876543210",
+    "email": "doctor@medigpro.com",
+    "created_at": "2026-06-15T08:00:00Z"
+  }
+]

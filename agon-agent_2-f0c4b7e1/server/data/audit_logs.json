@@ -1,0 +1,38 @@
+[
+  {
+    "id": "aud-1781498884099-b41ll",
+    "created_at": "2026-06-15T04:48:04.099Z",
+    "action": "patient_registered",
+    "actor_id": "doc-1",
+    "entity_type": "patient",
+    "entity_id": "pat-1",
+    "details": "Patient John Doe registered by doc-1"
+  },
+  {
+    "id": "aud-1781498924472-2fc9j",
+    "created_at": "2026-06-15T04:48:44.472Z",
+    "action": "patient_registered",
+    "actor_id": "doc-1",
+    "entity_type": "patient",
+    "entity_id": "pat-1781498924472-t5pbv",
+    "details": "Patient Bob Miller registered by doc-1"
+  },
+  {
+    "id": "aud-1781501873165-8bm6q",
+    "created_at": "2026-06-15T05:37:53.166Z",
+    "action": "patient_registered",
+    "actor_id": "doc-1",
+    "entity_type": "patient",
+    "entity_id": "pat-1781501873163-r6yd6",
+    "details": "Patient Jayavrdhan registered by doc-1"
+  },
+  {
+    "id": "aud-1781503523490-1seqy",
+    "created_at": "2026-06-15T06:05:23.490Z",
+    "action": "patient_registered",
+    "actor_id": "doc-1",
+    "entity_type": "patient",
+    "entity_id": "pat-1781503523489-s5fyf",
+    "details": "Patient Jayavrdhan registered by doc-1"
+  }
+]

@@ -20,14 +20,19 @@ export async function getPatients(req, res, next) {
     }
 
     if (qr_code) {
-      const { data, error } = await query.eq('qr_code', qr_code).single();
-      if (error) {
-        if (error.code === 'PGRST116') {
-          return next(new NotFoundError('Patient with this QR Code not found'));
-        }
-        throw error;
+      let result = await supabase.from('patients').select('*').eq('qr_code', qr_code).single();
+      if (result.error && result.error.code === 'PGRST116') {
+        // Fallback to checking by patient_id (for manual entries)
+        result = await supabase.from('patients').select('*').eq('patient_id', qr_code).single();
       }
-      return res.status(200).json(data);
+
+      if (result.error) {
+        if (result.error.code === 'PGRST116') {
+          return next(new NotFoundError('Patient with this QR Code or ID not found'));
+        }
+        throw result.error;
+      }
+      return res.status(200).json(result.data);
     }
 
     if (search) {

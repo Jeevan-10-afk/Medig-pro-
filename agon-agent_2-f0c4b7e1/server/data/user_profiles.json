@@ -1,0 +1,55 @@
+[
+  {
+    "id": "doc-1",
+    "email": "doctor@medigpro.com",
+    "full_name": "Dr. Jeevan",
+    "role": "doctor",
+    "phone": "9876543210",
+    "date_of_birth": "1985-05-15",
+    "gender": "male",
+    "address": "123 Main St, Coimbatore"
+  },
+  {
+    "id": "admin-1",
+    "email": "admin@medigpro.com",
+    "full_name": "Admin User",
+    "role": "admin",
+    "phone": "9999999999",
+    "date_of_birth": "1980-01-01",
+    "gender": "female",
+    "address": "456 Admin Ave, Coimbatore"
+  },
+  {
+    "id": "usr-1781501284887",
+    "created_at": "2026-06-15T05:28:04.889Z",
+    "email": "jayavardhan.bhavikatti@gmail.com",
+    "full_name": "Jayavrdhan",
+    "role": "patient",
+    "phone": "8088389332",
+    "date_of_birth": "2007-12-23T00:00:00.000Z",
+    "gender": "male",
+    "address": "dibbur"
+  },
+  {
+    "id": "usr-1781501648990",
+    "created_at": "2026-06-15T05:34:08.991Z",
+    "email": "jeevanupyatigoudar1919@gmail.com",
+    "full_name": "Jeevan",
+    "role": "patient",
+    "phone": "8088389332",
+    "date_of_birth": "2007-12-23T00:00:00.000Z",
+    "gender": "male",
+    "address": "dibbur"
+  },
+  {
+    "id": "usr-1781629057817",
+    "created_at": "2026-06-16T16:57:37.819Z",
+    "email": "jayavardhan.6002@gmail.com",
+    "full_name": "Jayavrdhan",
+    "role": "patient",
+    "phone": "9741143572",
+    "date_of_birth": "2006-10-16T00:00:00.000Z",
+    "gender": "male",
+    "address": "dibbur"
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "mr-1",
+    "patient_id": "pat-1781501873163-r6yd6",
+    "doctor_id": "doc-1",
+    "diagnosis": "Mild Hypertension + Fever",
+    "treatment": "Lifestyle modification, reduce sodium intake, rest and hydration",
+    "prescription": "Amlodipine 5mg daily, Paracetamol 500mg TID",
+    "notes": "Patient has a history of chest pain. BP was 120/82. Follow-up in 2 weeks.",
+    "created_at": "2026-06-15T09:05:00Z"
+  },
+  {
+    "id": "mr-2",
+    "patient_id": "pat-1781503523489-s5fyf",
+    "doctor_id": "doc-1",
+    "diagnosis": "Chest Pain - Non-cardiac origin",
+    "treatment": "Antacids for GERD, avoid spicy food",
+    "prescription": "Pantoprazole 40mg daily, Dolo 650 SOS",
+    "notes": "ECG normal. Likely musculoskeletal or GERD-related. Advised stress reduction.",
+    "created_at": "2026-06-15T11:30:00Z"
+  },
+  {
+    "id": "mr-3",
+    "patient_id": "pat-2",
+    "doctor_id": "doc-1",
+    "diagnosis": "Type 2 Diabetes - Controlled",
+    "treatment": "Dietary changes, increased physical activity",
+    "prescription": "Metformin 500mg BD, Glipizide 5mg OD",
+    "notes": "HbA1c at 7.1%. Good control. Review in 3 months.",
+    "created_at": "2026-06-16T08:00:00Z"
+  }
+]

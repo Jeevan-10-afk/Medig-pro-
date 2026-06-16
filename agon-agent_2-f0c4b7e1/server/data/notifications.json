@@ -1,0 +1,10 @@
+[
+  {
+    "id": "not-1",
+    "user_id": "doc-1",
+    "title": "Welcome to MediG Pro+",
+    "message": "Start managing patient records and appointments.",
+    "read": false,
+    "created_at": "2026-06-15T08:00:00Z"
+  }
+]

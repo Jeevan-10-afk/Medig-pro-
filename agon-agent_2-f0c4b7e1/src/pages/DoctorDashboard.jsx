@@ -5,7 +5,7 @@ import {
   Search, QrCode, FileText, Users, Activity, Calendar,
   Bell, Settings, LogOut, Plus, Eye, Edit, Download,
   ChevronRight, TrendingUp, UserCheck, Clock, BarChart3,
-  Upload, FileScan, Stethoscope, Menu, X
+  Upload, FileScan, Stethoscope, Menu, X, AlertCircle, Camera
 } from 'lucide-react';
 import QRScanner from '../components/QRScanner';
 import OCRScanner from '../components/OCRScanner';
@@ -45,13 +45,26 @@ export default function DoctorDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [analytics, setAnalytics] = useState(null);
+  const [medicalRecords, setMedicalRecords] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showOCRScanner, setShowOCRScanner] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [showPatientModal, setShowPatientModal] = useState(false);
+  const [toast, setToast] = useState(null); // { message, type: 'success' | 'error' }
   const navigate = useNavigate();
+
+  const showToastMessage = (message, type = 'success') => {
+    setToast({ message, type });
+  };
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   useEffect(() => {
     fetchData();
@@ -62,20 +75,23 @@ export default function DoctorDashboard() {
       const token = localStorage.getItem('token');
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
       
-      const [patientsRes, appointmentsRes, notificationsRes, analyticsRes] = await Promise.all([
+      const [patientsRes, appointmentsRes, notificationsRes, analyticsRes, recordsRes] = await Promise.all([
         fetch('/api/patients', { headers }),
         fetch('/api/appointments', { headers }),
         fetch('/api/notifications', { headers }),
-        fetch('/api/analytics', { headers })
+        fetch('/api/analytics', { headers }),
+        fetch('/api/medical-records', { headers })
       ]);
 
       const patientsData = await patientsRes.json();
       const appointmentsData = await appointmentsRes.json();
       const notificationsData = await notificationsRes.json();
       const analyticsData = await analyticsRes.json();
+      const recordsData = recordsRes.ok ? await recordsRes.json() : [];
 
-      setPatients(patientsData);
-      setAppointments(appointmentsData);
+      setPatients(Array.isArray(patientsData) ? patientsData : []);
+      setAppointments(Array.isArray(appointmentsData) ? appointmentsData : []);
+      setMedicalRecords(Array.isArray(recordsData) ? recordsData : []);
       setNotifications(notificationsData);
       setAnalytics(analyticsData);
     } catch (err) {
@@ -91,13 +107,23 @@ export default function DoctorDashboard() {
       const token = localStorage.getItem('token');
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
       const res = await fetch(`/api/patients?qr_code=${patientId}`, { headers });
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Patient lookup failed');
+      }
+
       const patient = await res.json();
-      if (patient) {
+      if (patient && !patient.error) {
         setSelectedPatient(patient);
         setShowPatientModal(true);
+        showToastMessage(`Successfully loaded details for ${patient.full_name}`, 'success');
+      } else {
+        throw new Error(patient?.error || 'Invalid patient record format');
       }
     } catch (err) {
-      console.error('Patient not found:', err);
+      console.error('Patient lookup failed:', err);
+      showToastMessage(err.message || 'Patient not found', 'error');
     }
   };
 
@@ -196,7 +222,6 @@ export default function DoctorDashboard() {
               key={item.id}
               onClick={() => {
                 setActiveTab(item.id);
-                if (item.id === 'scanner') setShowQRScanner(true);
                 if (item.id === 'ocr') setShowOCRScanner(true);
               }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition ${
@@ -487,6 +512,201 @@ export default function DoctorDashboard() {
               </div>
             </motion.div>
           )}
+
+          {/* Medical Records Tab */}
+          {activeTab === 'records' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-white">Medical Records</h2>
+                <div className="text-sm text-gray-400">{medicalRecords.length} record{medicalRecords.length !== 1 ? 's' : ''}</div>
+              </div>
+
+              {medicalRecords.length === 0 ? (
+                <div className="bg-slate-800 rounded-xl p-12 border border-white/10 text-center">
+                  <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400 text-lg">No medical records found</p>
+                  <p className="text-gray-500 text-sm mt-1">Records will appear here after patient consultations</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {medicalRecords.map((record) => {
+                    const patient = patients.find(p => p.id === record.patient_id);
+                    return (
+                      <motion.div
+                        key={record.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-slate-800 rounded-xl p-6 border border-white/10 hover:border-teal-500/30 transition-all"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                              {patient?.full_name?.charAt(0) || '?'}
+                            </div>
+                            <div>
+                              <p className="text-white font-semibold text-lg">{patient?.full_name || 'Unknown Patient'}</p>
+                              <p className="text-gray-400 text-sm">{patient?.patient_id || record.patient_id}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs text-gray-500 bg-white/5 px-3 py-1 rounded-full">
+                              {new Date(record.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-3 gap-4">
+                          <div className="bg-white/5 rounded-lg p-4">
+                            <p className="text-teal-400 text-xs font-semibold uppercase tracking-wider mb-2">Diagnosis</p>
+                            <p className="text-white text-sm">{record.diagnosis || 'N/A'}</p>
+                          </div>
+                          <div className="bg-white/5 rounded-lg p-4">
+                            <p className="text-blue-400 text-xs font-semibold uppercase tracking-wider mb-2">Treatment</p>
+                            <p className="text-white text-sm">{record.treatment || 'N/A'}</p>
+                          </div>
+                          <div className="bg-white/5 rounded-lg p-4">
+                            <p className="text-purple-400 text-xs font-semibold uppercase tracking-wider mb-2">Prescription</p>
+                            <p className="text-white text-sm">{record.prescription || 'None'}</p>
+                          </div>
+                        </div>
+
+                        {record.notes && (
+                          <div className="mt-4 bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-3">
+                            <p className="text-yellow-400 text-xs font-semibold uppercase tracking-wider mb-1">Notes</p>
+                            <p className="text-gray-300 text-sm">{record.notes}</p>
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Reports Tab */}
+          {activeTab === 'reports' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-white">Reports & Documents</h2>
+              </div>
+
+              {/* Upload Area */}
+              <div className="bg-slate-800 rounded-xl border-2 border-dashed border-white/20 hover:border-teal-500/50 transition-all p-10 text-center group">
+                <div className="w-16 h-16 rounded-2xl bg-teal-500/10 group-hover:bg-teal-500/20 transition flex items-center justify-center mx-auto mb-4">
+                  <Upload className="w-8 h-8 text-teal-400" />
+                </div>
+                <h3 className="text-white font-semibold text-lg mb-1">Upload Medical Report</h3>
+                <p className="text-gray-400 text-sm mb-4">Drag &amp; drop or click to upload PDF, images, or documents</p>
+                <label
+                  htmlFor="report-upload"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-400 hover:to-blue-400 text-white rounded-lg font-medium cursor-pointer transition"
+                >
+                  <Upload className="w-4 h-4" />
+                  Choose File
+                </label>
+                <input id="report-upload" type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" />
+              </div>
+
+              {/* Empty State */}
+              <div className="bg-slate-800 rounded-xl p-10 border border-white/10 text-center">
+                <FileScan className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400 text-lg">No reports uploaded yet</p>
+                <p className="text-gray-500 text-sm mt-1">Uploaded lab reports, scans, and documents will appear here</p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* QR Scanner Tab */}
+          {activeTab === 'scanner' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-white">QR Scanner</h2>
+                <p className="text-gray-400 text-sm">Scan a patient QR code or enter ID manually to view records</p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Inline Scanner Card */}
+                <div className="bg-slate-800 rounded-xl p-6 border border-white/10">
+                  <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                    <QrCode className="w-5 h-5 text-teal-400" />
+                    Scan or Lookup Patient
+                  </h3>
+
+                  <button
+                    onClick={() => setShowQRScanner(true)}
+                    className="w-full flex items-center justify-center gap-3 px-6 py-5 bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-400 hover:to-blue-400 text-white rounded-xl font-medium transition mb-4"
+                  >
+                    <Camera className="w-6 h-6" />
+                    Open Camera Scanner
+                  </button>
+
+                  <div className="relative py-3">
+                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/20"></div></div>
+                    <div className="relative flex justify-center"><span className="px-4 bg-slate-800 text-gray-400 text-xs uppercase tracking-wider">or enter manually</span></div>
+                  </div>
+
+                  <div className="flex gap-2 mt-2">
+                    <input
+                      type="text"
+                      id="inline-qr-input"
+                      placeholder="Patient ID or QR Code (e.g. PMQET789S)"
+                      className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleQRScan(e.target.value.trim()); }}
+                    />
+                    <button
+                      onClick={() => {
+                        const el = document.getElementById('inline-qr-input');
+                        if (el?.value.trim()) handleQRScan(el.value.trim());
+                      }}
+                      className="px-5 py-3 bg-teal-600 hover:bg-teal-500 text-white rounded-lg transition flex items-center gap-2 text-sm font-medium"
+                    >
+                      <Search className="w-4 h-4" />
+                      Search
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quick Patient List */}
+                <div className="bg-slate-800 rounded-xl p-6 border border-white/10">
+                  <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                    <Users className="w-5 h-5 text-blue-400" />
+                    Recent Patients
+                  </h3>
+                  <div className="space-y-2 max-h-72 overflow-y-auto">
+                    {patients.slice(0, 8).map(patient => (
+                      <button
+                        key={patient.id}
+                        onClick={() => handleQRScan(patient.patient_id)}
+                        className="w-full flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition text-left"
+                      >
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                          {patient.full_name?.charAt(0)}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-white text-sm font-medium truncate">{patient.full_name}</p>
+                          <p className="text-gray-400 text-xs">{patient.patient_id}</p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-500 ml-auto flex-shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </main>
       </div>
 
@@ -635,6 +855,27 @@ export default function DoctorDashboard() {
                 </div>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+
+        {/* Toast Notification */}
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg backdrop-blur-md ${
+              toast.type === 'error'
+                ? 'bg-red-500/20 border-red-500/30 text-red-200'
+                : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-200'
+            }`}
+          >
+            {toast.type === 'error' ? (
+              <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-400" />
+            ) : (
+              <UserCheck className="w-5 h-5 flex-shrink-0 text-emerald-400" />
+            )}
+            <span className="font-medium text-sm text-white">{toast.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
